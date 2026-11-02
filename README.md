@@ -137,6 +137,22 @@ http://localhost/php-crud/
 | Update | Modify employee information |
 | Delete | Remove an employee after confirmation |
 
+## Application Screenshots
+
+### 1. Employee Dashboard
+![Employee Dashboard](screenshots/dashboard.png)
+
+### 2. Add Employee
+![Add Employee](screenshots/add-employee.png)
+
+### 3. Edit Employee
+![Edit Employee](screenshots/edit-employee.png)
+
+### 4. Delete Confirmation
+![Delete Confirmation](screenshots/delete-confirmation.png)
+
+
+
 ## Learning Outcomes
 
 - Understanding PHP fundamentals.
@@ -147,6 +163,7 @@ http://localhost/php-crud/
 - Organizing code using a simple model-based structure.
 - Using Bootstrap to build responsive interfaces.
 - Using Git and GitHub for version control.
+
 
 ## Author
 
