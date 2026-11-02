@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+.env.*
+
+# Dependencies
+/vendor/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# IDE settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+!.env.example
