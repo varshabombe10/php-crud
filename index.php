@@ -3,10 +3,12 @@
 
 session_start();
 
+// Generate CSRF token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+// Include required files
 require_once 'config/database.php';
 require_once 'models/Employee.php';
 
@@ -16,21 +18,29 @@ $db = $database->getConnection();
 
 $employee = new Employee($db);
 
-// Search and department filters
-$search = trim($_GET['search'] ?? '');
-$department = trim($_GET['department'] ?? '');
+// Get search and department filters safely
+$rawSearch = $_GET['search'] ?? '';
+$rawDepartment = $_GET['department'] ?? '';
+
+$search = is_string($rawSearch) ? trim($rawSearch) : '';
+$department = is_string($rawDepartment) ? trim($rawDepartment) : '';
 
 // Get available departments
 $departments = $employee->getDepartments();
 
-// Accept only an existing department
-if ($department !== '' && !in_array($department, $departments, true)) {
+// Validate selected department
+if (
+    $department !== '' &&
+    !in_array($department, $departments, true)
+) {
     $department = '';
 }
 
 // Pagination settings
 $limit = 10;
-$page = max(1, (int)($_GET['page'] ?? 1));
+
+$rawPage = $_GET['page'] ?? 1;
+$page = is_scalar($rawPage) ? max(1, (int)$rawPage) : 1;
 
 // Count matching employees
 $totalEmployees = $employee->countFilteredEmployees(
@@ -44,7 +54,7 @@ $totalPages = max(1, (int)ceil($totalEmployees / $limit));
 // Prevent invalid page numbers
 $page = min($page, $totalPages);
 
-// Calculate starting record
+// Calculate offset
 $offset = ($page - 1) * $limit;
 
 // Fetch employees for current page
@@ -55,7 +65,7 @@ $employees = $employee->getFilteredEmployees(
     $offset
 );
 
-// Build pagination URL while preserving filters
+// Pagination URL - preserve selected filters
 function paginationUrl($page, $search, $department)
 {
     return '?' . http_build_query([
@@ -71,87 +81,166 @@ function paginationUrl($page, $search, $department)
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Employee Management System</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container-fluid p-4">
+<div class="main-container">
 
-    <h2 class="mb-4">All Employees</h2>
+    <!-- ==============================
+         PAGE HEADER
+    =============================== -->
 
-    <!-- Search and Department Filter -->
-    <div class="card shadow-sm mb-4">
+    <div class="page-header">
 
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Employee List</h5>
+        <div>
+            <h2 class="page-title">All Employees</h2>
+
+            <p class="page-subtitle">
+                Manage, search and organize your employee records.
+            </p>
         </div>
 
-        <div class="card-body">
+        <div>
+            <a href="create.php" class="btn btn-primary">
+                + Add Employee
+            </a>
+        </div>
 
-            <form method="GET" action="index.php">
+    </div>
 
-                <div class="row g-3 align-items-end">
 
-                    <!-- Search -->
-                    <div class="col-md-5">
+    <!-- ==============================
+         SUCCESS MESSAGES
+    =============================== -->
 
-                        <label class="form-label">
-                            Search Employee
-                        </label>
+    <?php if (isset($_GET['success'])): ?>
 
-                        <input
-                            type="text"
-                            name="search"
-                            class="form-control"
-                            placeholder="Search by name or email"
-                            value="<?php echo htmlspecialchars($search); ?>"
-                        >
+        <div class="alert alert-success animate-fade" role="alert">
+            Employee added successfully!
+        </div>
 
-                    </div>
+    <?php endif; ?>
 
-                    <!-- Department Filter -->
-                    <div class="col-md-4">
 
-                        <label class="form-label">
-                            Department
-                        </label>
+    <?php if (isset($_GET['updated'])): ?>
 
-                        <select name="department" class="form-select">
+        <div class="alert alert-success animate-fade" role="alert">
+            Employee updated successfully!
+        </div>
 
-                            <option value="">
-                                All Departments
+    <?php endif; ?>
+
+
+    <?php if (isset($_GET['deleted'])): ?>
+
+        <div class="alert alert-success animate-fade" role="alert">
+            Employee deleted successfully!
+        </div>
+
+    <?php endif; ?>
+
+
+    <!-- ==============================
+         SEARCH AND FILTER SECTION
+    =============================== -->
+
+    <div class="custom-card">
+
+        <h5 class="card-heading">
+            Search & Filter Employees
+        </h5>
+
+        <form method="GET" action="index.php">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- Search by name or email -->
+                <div class="col-12 col-md-6 col-lg-5">
+
+                    <label for="search" class="form-label">
+                        Search Employee
+                    </label>
+
+                    <input
+                        type="text"
+                        id="search"
+                        name="search"
+                        class="form-control"
+                        placeholder="Enter employee name or email"
+                        value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
+                    >
+
+                </div>
+
+
+                <!-- Department dropdown -->
+                <div class="col-12 col-md-6 col-lg-4">
+
+                    <label for="department" class="form-label">
+                        Department
+                    </label>
+
+                    <select
+                        name="department"
+                        id="department"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All Departments
+                        </option>
+
+                        <?php foreach ($departments as $dept): ?>
+
+                            <option
+                                value="<?php echo htmlspecialchars($dept, ENT_QUOTES, 'UTF-8'); ?>"
+                                <?php echo ($department === $dept) ? 'selected' : ''; ?>
+                            >
+
+                                <?php echo htmlspecialchars($dept, ENT_QUOTES, 'UTF-8'); ?>
+
                             </option>
 
-                            <?php foreach ($departments as $dept): ?>
+                        <?php endforeach; ?>
 
-                                <option
-                                    value="<?php echo htmlspecialchars($dept); ?>"
-                                    <?php echo ($department === $dept) ? 'selected' : ''; ?>
-                                >
-                                    <?php echo htmlspecialchars($dept); ?>
-                                </option>
+                    </select>
 
-                            <?php endforeach; ?>
+                </div>
 
-                        </select>
 
-                    </div>
+                <!-- Filter buttons -->
+                <div class="col-12 col-lg-3">
 
-                    <!-- Apply Button -->
-                    <div class="col-md-3">
+                    <div class="filter-actions">
 
-                        <button type="submit" class="btn btn-primary">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
                             Apply Filters
                         </button>
 
-                        <a href="index.php" class="btn btn-secondary">
+                        <a
+                            href="index.php"
+                            class="btn btn-secondary"
+                        >
                             Reset
                         </a>
 
@@ -159,244 +248,336 @@ function paginationUrl($page, $search, $department)
 
                 </div>
 
-            </form>
+            </div>
 
-        </div>
+        </form>
 
     </div>
 
 
-    <!-- Success Messages -->
+    <!-- ==============================
+         EMPLOYEE RECORDS SECTION
+    =============================== -->
 
-    <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success">
-            Employee added successfully!
-        </div>
-    <?php endif; ?>
+    <div class="custom-card">
 
-    <?php if (isset($_GET['updated'])): ?>
-        <div class="alert alert-success">
-            Employee updated successfully!
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['deleted'])): ?>
-        <div class="alert alert-success">
-            Employee deleted successfully!
-        </div>
-    <?php endif; ?>
-
-
-    <!-- Employee Table -->
-
-    <div class="card shadow-sm">
-
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-
-            <h5 class="mb-0">Employee Records</h5>
+        <!-- Table heading -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
             <div>
-                <span class="badge bg-primary">
+                <h5 class="card-heading mb-1">
+                    Employee Records
+                </h5>
+
+                <small class="text-muted">
+                    View and manage your employee information.
+                </small>
+            </div>
+
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                <span class="total-badge">
                     Total: <?php echo $totalEmployees; ?>
                 </span>
 
-                <a href="create.php" class="btn btn-success btn-sm ms-2">
-                    Add Employee
+                <a
+                    href="create.php"
+                    class="btn btn-success"
+                >
+                    + Add Employee
                 </a>
+
             </div>
 
         </div>
 
-        <div class="card-body">
 
-            <div class="table-responsive">
+        <!-- ==============================
+             EMPLOYEE TABLE
+        =============================== -->
 
-                <table class="table table-bordered table-hover align-middle">
+        <div class="table-responsive">
 
-                    <thead class="table-dark">
+            <table class="table employee-table">
 
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Department</th>
-                            <th>Salary</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
+                <thead>
 
-                    </thead>
+                    <tr>
 
-                    <tbody>
+                        <th>ID</th>
 
-                        <?php if (!empty($employees)): ?>
+                        <th>Name</th>
 
-                            <?php foreach ($employees as $row): ?>
+                        <th>Email</th>
 
-                                <tr>
+                        <th>Phone</th>
 
-                                    <td><?php echo (int)$row['id']; ?></td>
+                        <th>Department</th>
 
-                                    <td>
-                                        <?php echo htmlspecialchars($row['name']); ?>
-                                    </td>
+                        <th>Salary</th>
 
-                                    <td>
-                                        <?php echo htmlspecialchars($row['email']); ?>
-                                    </td>
+                        <th>Created At</th>
 
-                                    <td>
-                                        <?php echo htmlspecialchars($row['phone']); ?>
-                                    </td>
+                        <th>Actions</th>
 
-                                    <td>
-                                        <?php echo htmlspecialchars($row['department']); ?>
-                                    </td>
+                    </tr>
 
-                                    <td>
-                                        ₹<?php echo htmlspecialchars($row['salary']); ?>
-                                    </td>
+                </thead>
 
-                                    <td>
-                                        <?php echo htmlspecialchars($row['created_at']); ?>
-                                    </td>
 
-                                    <td>
+                <tbody>
 
+                    <?php if (!empty($employees)): ?>
+
+                        <?php foreach ($employees as $row): ?>
+
+                            <tr>
+
+                                <!-- Employee ID -->
+                                <td>
+                                    <?php echo (int)$row['id']; ?>
+                                </td>
+
+
+                                <!-- Employee Name -->
+                                <td>
+                                    <strong>
+                                        <?php echo htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8'); ?>
+                                    </strong>
+                                </td>
+
+
+                                <!-- Email -->
+                                <td>
+                                    <?php echo htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+
+
+                                <!-- Phone -->
+                                <td>
+                                    <?php echo htmlspecialchars($row['phone'], ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+
+
+                                <!-- Department -->
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <?php echo htmlspecialchars($row['department'], ENT_QUOTES, 'UTF-8'); ?>
+                                    </span>
+                                </td>
+
+
+                                <!-- Salary -->
+                                <td>
+                                    ₹<?php echo htmlspecialchars($row['salary'], ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+
+
+                                <!-- Created Date -->
+                                <td>
+                                    <?php echo htmlspecialchars($row['created_at'], ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+
+
+                                <!-- Actions -->
+                                <td>
+
+                                    <div class="d-flex gap-2">
+
+                                        <!-- Edit button -->
                                         <a
                                             href="edit.php?id=<?php echo (int)$row['id']; ?>"
-                                            class="btn btn-warning btn-sm">
+                                            class="btn btn-warning btn-sm"
+                                        >
                                             Edit
                                         </a>
 
+
+                                        <!-- Delete form -->
                                         <form
                                             action="delete.php"
                                             method="POST"
                                             class="d-inline"
-                                            onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                                            onsubmit="return confirm('Are you sure you want to delete this employee?');"
+                                        >
 
                                             <input
                                                 type="hidden"
                                                 name="id"
-                                                value="<?php echo (int)$row['id']; ?>">
+                                                value="<?php echo (int)$row['id']; ?>"
+                                            >
 
                                             <input
                                                 type="hidden"
                                                 name="csrf_token"
-                                                value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>"
+                                            >
 
                                             <button
                                                 type="submit"
-                                                class="btn btn-danger btn-sm">
+                                                class="btn btn-danger btn-sm"
+                                            >
                                                 Delete
                                             </button>
 
                                         </form>
 
-                                    </td>
+                                    </div>
 
-                                </tr>
-
-                            <?php endforeach; ?>
-
-                        <?php else: ?>
-
-                            <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    No employees found.
-                                    Try changing your search or department filter.
                                 </td>
+
                             </tr>
 
-                        <?php endif; ?>
-
-                    </tbody>
-
-                </table>
-
-            </div>
+                        <?php endforeach; ?>
 
 
-            <!-- Pagination -->
+                    <?php else: ?>
 
-            <?php if ($totalEmployees > 0): ?>
+                        <!-- Empty result message -->
+                        <tr>
 
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                            <td colspan="8" class="text-center py-5">
 
-                    <p class="mb-0 text-muted">
+                                <div class="animate-fade">
 
-                        Showing
-                        <?php echo $offset + 1; ?>
+                                    <h6 class="text-secondary">
+                                        No Employees Found
+                                    </h6>
 
-                        to
+                                    <p class="text-muted mb-3">
+                                        No matching employee records were found.
+                                        Try changing your search or department filter.
+                                    </p>
 
-                        <?php echo $offset + count($employees); ?>
-
-                        of
-
-                        <?php echo $totalEmployees; ?>
-
-                        employees
-
-                    </p>
-
-                    <nav aria-label="Employee pagination">
-
-                        <ul class="pagination mb-0">
-
-                            <!-- Previous -->
-
-                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-
-                                <a class="page-link"
-                                   href="<?php echo htmlspecialchars(paginationUrl(max(1, $page - 1), $search, $department)); ?>">
-                                    Previous
-                                </a>
-
-                            </li>
-
-                            <!-- Page Numbers -->
-
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-
-                                <li class="page-item <?php echo ($page === $i) ? 'active' : ''; ?>">
-
-                                    <a class="page-link"
-                                       href="<?php echo htmlspecialchars(paginationUrl($i, $search, $department)); ?>">
-
-                                        <?php echo $i; ?>
-
+                                    <a
+                                        href="index.php"
+                                        class="btn btn-outline-primary btn-sm"
+                                    >
+                                        Clear Filters
                                     </a>
 
-                                </li>
+                                </div>
 
-                            <?php endfor; ?>
+                            </td>
 
-                            <!-- Next -->
+                        </tr>
 
-                            <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                    <?php endif; ?>
 
-                                <a class="page-link"
-                                   href="<?php echo htmlspecialchars(paginationUrl(min($totalPages, $page + 1), $search, $department)); ?>">
-                                    Next
-                                </a>
+                </tbody>
 
-                            </li>
-
-                        </ul>
-
-                    </nav>
-
-                </div>
-
-            <?php endif; ?>
+            </table>
 
         </div>
 
+
+        <!-- ==============================
+             PAGINATION
+        =============================== -->
+
+        <?php if ($totalEmployees > 0): ?>
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+
+                <!-- Record count -->
+                <p class="mb-0 text-muted">
+
+                    Showing
+
+                    <strong>
+                        <?php echo $offset + 1; ?>
+                    </strong>
+
+                    to
+
+                    <strong>
+                        <?php echo $offset + count($employees); ?>
+                    </strong>
+
+                    of
+
+                    <strong>
+                        <?php echo $totalEmployees; ?>
+                    </strong>
+
+                    employees
+
+                </p>
+
+
+                <!-- Pagination navigation -->
+                <nav aria-label="Employee pagination">
+
+                    <ul class="pagination mb-0">
+
+
+                        <!-- Previous button -->
+                        <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+
+                            <a
+                                class="page-link"
+                                href="<?php echo htmlspecialchars(paginationUrl(max(1, $page - 1), $search, $department), ENT_QUOTES, 'UTF-8'); ?>"
+                                <?php echo ($page <= 1) ? 'aria-disabled="true" tabindex="-1"' : ''; ?>
+                            >
+                                Previous
+                            </a>
+
+                        </li>
+
+
+                        <!-- Page numbers -->
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+
+                            <li class="page-item <?php echo ($page === $i) ? 'active' : ''; ?>">
+
+                                <a
+                                    class="page-link"
+                                    href="<?php echo htmlspecialchars(paginationUrl($i, $search, $department), ENT_QUOTES, 'UTF-8'); ?>"
+                                    <?php echo ($page === $i) ? 'aria-current="page"' : ''; ?>
+                                >
+
+                                    <?php echo $i; ?>
+
+                                </a>
+
+                            </li>
+
+                        <?php endfor; ?>
+
+
+                        <!-- Next button -->
+                        <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+
+                            <a
+                                class="page-link"
+                                href="<?php echo htmlspecialchars(paginationUrl(min($totalPages, $page + 1), $search, $department), ENT_QUOTES, 'UTF-8'); ?>"
+                                <?php echo ($page >= $totalPages) ? 'aria-disabled="true" tabindex="-1"' : ''; ?>
+                            >
+                                Next
+                            </a>
+
+                        </li>
+
+
+                    </ul>
+
+                </nav>
+
+            </div>
+
+        <?php endif; ?>
+
+
     </div>
+
+    <!-- End Employee Records -->
 
 </div>
 
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
+
 </html>

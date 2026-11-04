@@ -1,0 +1,339 @@
+
+/* ==================================
+   GLOBAL STYLES
+================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f7fc;
+    color: #25324b;
+    margin: 0;
+}
+
+.main-container {
+    max-width: 1600px;
+    margin: auto;
+    padding: 30px;
+}
+
+/* ==================================
+   PAGE HEADER
+================================== */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #172b4d;
+    margin: 0;
+}
+
+.page-subtitle {
+    color: #8290a8;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+/* ==================================
+   CARDS
+================================== */
+
+.custom-card {
+    background: #ffffff;
+    border: 1px solid #e9edf5;
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 18px rgba(31, 45, 75, 0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    animation: fadeUp 0.6s ease both;
+}
+
+.custom-card:hover {
+    box-shadow: 0 9px 25px rgba(31, 45, 75, 0.09);
+}
+
+.card-heading {
+    font-size: 17px;
+    font-weight: 650;
+    color: #23395d;
+    margin-bottom: 20px;
+}
+
+/* ==================================
+   FORM INPUTS
+================================== */
+
+.form-control,
+.form-select {
+    min-height: 43px;
+    border: 1px solid #dce3ef;
+    border-radius: 9px;
+    padding: 10px 13px;
+    font-size: 14px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #315efb;
+    box-shadow: 0 0 0 3px rgba(49, 94, 251, 0.12);
+}
+
+/* ==================================
+   BUTTONS
+================================== */
+
+.btn {
+    border-radius: 9px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: #2449c7;
+    border-color: #2449c7;
+}
+
+.btn-primary:hover {
+    background: #1739a7;
+    border-color: #1739a7;
+    box-shadow: 0 5px 13px rgba(36, 73, 199, 0.2);
+}
+
+.btn-success:hover,
+.btn-warning:hover,
+.btn-danger:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* ==================================
+   EMPLOYEE TABLE
+================================== */
+
+.table-responsive {
+    border-radius: 10px;
+}
+
+.employee-table {
+    min-width: 850px;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.employee-table thead th {
+    background: #f0f4fb;
+    color: #51617d;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 16px 13px;
+    border-bottom: 1px solid #e5eaf2;
+    white-space: nowrap;
+}
+
+.employee-table tbody td {
+    padding: 15px 13px;
+    font-size: 13px;
+    color: #44536d;
+    border-color: #edf0f5;
+}
+
+.employee-table tbody tr {
+    transition: background-color 0.2s ease;
+    animation: fadeUp 0.4s ease both;
+}
+
+.employee-table tbody tr:hover {
+    background: #f5f8ff;
+}
+
+.employee-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ==================================
+   TOTAL EMPLOYEE BADGE
+================================== */
+
+.total-badge {
+    display: inline-block;
+    background: #eaf0ff;
+    color: #2449c7;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ==================================
+   PAGINATION
+================================== */
+
+.pagination {
+    gap: 5px;
+}
+
+.pagination .page-link {
+    border: 1px solid #e0e6f0;
+    border-radius: 7px !important;
+    color: #36517d;
+    padding: 8px 13px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background: #eaf0ff;
+    color: #2449c7;
+    transform: translateY(-2px);
+}
+
+.pagination .active .page-link {
+    background: #2449c7;
+    border-color: #2449c7;
+    color: #ffffff;
+}
+
+/* ==================================
+   ANIMATIONS
+================================== */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fade {
+    animation: fadeIn 0.5s ease both;
+}
+
+/* ==================================
+   RESPONSIVE DESIGN
+================================== */
+
+@media (max-width: 768px) {
+
+    .main-container {
+        padding: 16px;
+    }
+
+    .page-title {
+        font-size: 23px;
+    }
+
+    .custom-card {
+        padding: 16px;
+        border-radius: 11px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+    }
+
+    .page-header .btn {
+        width: 100%;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .filter-actions .btn {
+        flex: 1;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .pagination .page-link {
+        padding: 7px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .main-container {
+        padding: 12px;
+    }
+
+    .page-title {
+        font-size: 21px;
+    }
+
+    .custom-card {
+        padding: 13px;
+    }
+
+    .page-subtitle {
+        font-size: 12px;
+    }
+
+    .pagination .page-link {
+        font-size: 12px;
+        padding: 6px 9px;
+    }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
