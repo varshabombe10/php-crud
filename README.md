@@ -85,16 +85,19 @@ php-crud/
 ```
 ## Screenshots
 
-### 1. Employee Dashboard
-![Employee Dashboard](screenshots/dashboard.png)
+### 1. Employee Dashboard – Overview
+![Employee Dashboard](screenshots/dashboard1.png)
 
-### 2. Add Employee
+### 2. Employee Dashboard – Search and Filtering
+![Employee Dashboard](screenshots/dashboard2.png)
+
+### 3. Add Employee
 ![Add Employee](screenshots/add-employee.png)
 
-### 3. Edit Employee
+### 4. Edit Employee
 ![Edit Employee](screenshots/edit-employee.png)
 
-### 4. Delete Confirmation
+### 5. Delete Confirmation
 ![Delete Confirmation](screenshots/delete-confirmation.png)
 
 ## Requirements
