@@ -83,29 +83,19 @@ php-crud/
 ├── .gitignore
 └── README.md
 ```
-
 ## Screenshots
 
-### 1. Employee Dashboard – Overview
+### 1. Employee Dashboard
+![Employee Dashboard](screenshots/dashboard.png)
 
-![Employee Dashboard](screenshots/dashboard1.png)
-
-### 2. Employee Dashboard – Search and Filtering
-
-![Employee Dashboard](screenshots/dashboard2.png)
-
-### 3. Add Employee
-
+### 2. Add Employee
 ![Add Employee](screenshots/add-employee.png)
 
-### 4. Edit Employee
-
+### 3. Edit Employee
 ![Edit Employee](screenshots/edit-employee.png)
 
-### 5. Delete Confirmation
-
+### 4. Delete Confirmation
 ![Delete Confirmation](screenshots/delete-confirmation.png)
-
 
 ## Requirements
 
